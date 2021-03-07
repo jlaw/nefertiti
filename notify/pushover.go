@@ -2,6 +2,7 @@ package notify
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/gregdel/pushover"
 	"github.com/svanas/nefertiti/flag"
@@ -78,6 +79,10 @@ func (this *Pushover) SendMessage(message, title string) error {
 	app := pushover.New(this.appKey)
 	rec := pushover.NewRecipient(this.userKey)
 	msg := pushover.NewMessageWithTitle(message, title)
+	if result := strings.SplitN(message, ":::", 2); len(result) > 1 {
+		msg.Sound = result[0]
+		msg.Message = result[1]
+	}
 	_, err := app.SendMessage(msg, rec)
 	return err
 }
