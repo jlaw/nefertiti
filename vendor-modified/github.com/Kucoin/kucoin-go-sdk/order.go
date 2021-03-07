@@ -48,27 +48,27 @@ type OrderModel struct {
 	Side          string `json:"side"`
 	Price         string `json:"price"`
 	Size          string `json:"size"`
-	Funds         string `json:"funds"`
-	DealFunds     string `json:"dealFunds"`
-	DealSize      string `json:"dealSize"`
-	Fee           string `json:"fee"`
+	Funds         string `json:"funds,omitempty"`
+	DealFunds     string `json:"dealFunds,omitempty"`
+	DealSize      string `json:"dealSize,omitempty"`
+	Fee           string `json:"fee,omitempty"`
 	FeeCurrency   string `json:"feeCurrency"`
-	Stp           string `json:"stp"`
-	Stop          string `json:"stop"`
-	StopTriggered bool   `json:"stopTriggered"`
-	StopPrice     string `json:"stopPrice"`
+	Stp           string `json:"stp,omitempty"`
+	Stop          string `json:"stop,omitempty"`
+	StopTriggered bool   `json:"stopTriggered,omitempty"`
+	StopPrice     string `json:"stopPrice,omitempty"`
 	TimeInForce   string `json:"timeInForce"`
-	PostOnly      bool   `json:"postOnly"`
-	Hidden        bool   `json:"hidden"`
-	IceBerg       bool   `json:"iceberg"`
-	VisibleSize   string `json:"visibleSize"`
-	CancelAfter   uint64 `json:"cancelAfter"`
+	PostOnly      bool   `json:"postOnly,omitempty"`
+	Hidden        bool   `json:"hidden,omitempty"`
+	IceBerg       bool   `json:"iceberg,omitempty"`
+	VisibleSize   string `json:"visibleSize,omitempty"`
+	CancelAfter   uint64 `json:"cancelAfter,omitempty"`
 	Channel       string `json:"channel"`
 	ClientOid     string `json:"clientOid"`
-	Remark        string `json:"remark"`
-	Tags          string `json:"tags"`
+	Remark        string `json:"remark,omitempty"`
+	Tags          string `json:"tags,omitempty"`
 	IsActive      bool   `json:"isActive"`
-	CancelExist   bool   `json:"cancelExist"`
+	CancelExist   bool   `json:"cancelExist,omitempty"`
 	CreatedAt     int64  `json:"createdAt"`
 }
 
