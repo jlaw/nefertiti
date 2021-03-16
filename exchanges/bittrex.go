@@ -514,7 +514,14 @@ func (self *Bittrex) sell(
 					if err == nil {
 						var prec int
 						if prec, err = self.GetPricePrec(client, order.MarketName()); err == nil {
-							qty := self.GetMaxSize(client, base, quote, hold.HasMarket(order.MarketName()), order.QuantityFilled())
+							amount := order.QuantityFilled()
+							// only sell to break even and bag the remaining amount
+							if flag.Exists("bag") {
+								sp,_ := self.GetSizePrec(client, order.MarketName())
+								amount = pricing.FloorToPrecision(order.QuantityFilled() / mult, sp)
+								log.Printf("[INFO] Sell %f to BE", amount)
+							}
+							qty := self.GetMaxSize(client, base, quote, hold.HasMarket(order.MarketName()), amount)
 							if qty > 0 {
 								tgt := pricing.Multiply(order.Price(), mult, prec)
 								if strategy == model.STRATEGY_STOP_LOSS {

@@ -465,6 +465,13 @@ func (self *Gdax) sell(
 							}
 
 							qty := old.Size
+							// only sell to break even and bag the remaining amount
+							if flag.Exists("bag") {
+								sp,_ := self.GetSizePrec(client, msg.ProductId)
+								qty = pricing.FloorToPrecision(old.Size / model.GetMult(), sp)
+								log.Printf("[INFO] Sell %f to BE", qty)
+							}
+
 							if qty == 0 {
 								if qty, err = self.getMinOrderSize(client, msg.ProductId); err != nil {
 									self.error(err, notify.Level(), service)

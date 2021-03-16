@@ -124,6 +124,7 @@ Options:
   --notify   = [0|1|2|3] (see below)
   --mult     = multiplier, for example: 1.05 (aka 5 percent, optional)
   --hold     = name of the market not to sell, for example: BTC-EUR (optional)
+  --bag      = sell only enough 'base' at 'mult' to break even; hold the rest
 
 Strategy:
   0 = Standard. No trailing. No stop-loss. Recommended, default strategy.

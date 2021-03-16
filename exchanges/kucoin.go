@@ -500,6 +500,12 @@ func (self *Kucoin) sell(
 		if sp, err = self.GetSizePrec(client, symbol); err != nil {
 			return new, err
 		} else {
+			// only sell to break even and bag the remaining amount
+			if flag.Exists("bag") {
+				amount = amount / mult
+				log.Printf("[INFO] Sell %f to BE", amount)
+			}
+
 			amount = pricing.FloorToPrecision(amount, sp)
 		}
 
