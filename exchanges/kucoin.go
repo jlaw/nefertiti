@@ -117,27 +117,27 @@ func (self *Kucoin) error(err error, level int64, service model.Notify) {
 	}
 }
 
-// func (self *Kucoin) getAvailableBalance(client *exchange.ApiService, curr string) (float64, error) {
-// 	var (
-// 		err      error
-// 		out      float64
-// 		resp     *exchange.ApiResponse
-// 		accounts exchange.AccountsModel
-// 	)
-// 	if resp, err = client.Accounts(curr, "trade"); err != nil {
-// 		return 0, errors.Wrap(err, 1)
-// 	}
-// 	if err = resp.ReadData(&accounts); err != nil {
-// 		return 0, errors.Wrap(err, 1)
-// 	}
-// 	if len(accounts) == 0 {
-// 		return 0, errors.Errorf("Currency %s does not exist", curr)
-// 	}
-// 	if out, err = strconv.ParseFloat(accounts[0].Available, 64); err != nil {
-// 		return 0, errors.Wrap(err, 1)
-// 	}
-// 	return out, nil
-// }
+func (self *Kucoin) getAvailableBalance(client *exchange.ApiService, curr string) (float64, error) {
+	var (
+		err      error
+		out      float64
+		resp     *exchange.ApiResponse
+		accounts exchange.AccountsModel
+	)
+	if resp, err = client.Accounts(curr, "trade"); err != nil {
+		return 0, errors.Wrap(err, 1)
+	}
+	if err = resp.ReadData(&accounts); err != nil {
+		return 0, errors.Wrap(err, 1)
+	}
+	if len(accounts) == 0 {
+		return 0, errors.Errorf("Currency %s does not exist", curr)
+	}
+	if out, err = strconv.ParseFloat(accounts[0].Available, 64); err != nil {
+		return 0, errors.Wrap(err, 1)
+	}
+	return out, nil
+}
 
 func (self *Kucoin) getSymbols(client *exchange.ApiService, cached bool) (exchange.SymbolsModel, error) {
 	if self.symbols == nil || cached == false {
@@ -517,15 +517,21 @@ func (self *Kucoin) sell(
 		base, quote, err = model.ParseMarket(markets, symbol)
 		if err == nil {
 			// --- BEGIN --- svanas 2019-02-19 --- if we have dust, try and sell it ---
-			// var available float64
-			// if available, err = self.getAvailableBalance(client, base); err != nil {
-			// 	self.error(err, level, service)
-			// } else {
-			// 	available = pricing.FloorToPrecision(available, sp)
-			// 	if available > amount {
-			// 		amount = available
-			// 	}
-			// }
+			if flag.Exists("dust") {
+				var available float64
+				var min float64
+				if available, err = self.getAvailableBalance(client, base); err != nil {
+					self.error(err, level, service)
+				} else if min, err = self.getMinSize(client, symbol, true); err != nil {
+					self.error(err, level, service)
+				} else if available > 0 {
+					available = pricing.FloorToPrecision(available, sp)
+					if available < amount + min {
+						log.Printf("[INFO] %f < %f + %f", available, amount, min)
+						amount = available
+					}
+				}
+			}
 			// ---- END ---- svanas 2019-02-19 ----------------------------------------
 			var pp int
 			if pp, err = self.GetPricePrec(client, symbol); err == nil {
