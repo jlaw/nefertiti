@@ -1026,7 +1026,7 @@ func (self *Bittrex) Buy(client interface{}, cancel bool, market1 string, calls 
 			if side == model.BUY {
 				// do not cancel orders that we're about to re-place
 				index := calls.IndexByPrice(order.Price())
-				if index > -1 && order.Quantity == size {
+				if index > -1 && order.Quantity == calls[index].Quantity {
 					calls[index].Skip = true
 				} else {
 					if err = bittrex.CancelOrder(order.Id); err != nil {
@@ -1047,7 +1047,7 @@ func (self *Bittrex) Buy(client interface{}, cancel bool, market1 string, calls 
 			_, _, err = self.Order(client,
 				model.BUY,
 				market1,
-				size,
+				call.Quantity,
 				limit,
 				kind, "",
 			)
