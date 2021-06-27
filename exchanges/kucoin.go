@@ -445,6 +445,7 @@ func (self *Kucoin) sell(
 								title = fmt.Sprintf("%s %.2f%%", title, perc)
 							}
 						}
+						data,_ := json.MarshalIndent(order, "", "  ")
 						if err = service.SendMessage(sound + string(data), title); err != nil {
 							log.Printf("[ERROR] %v", err)
 						}
@@ -622,6 +623,7 @@ func (self *Kucoin) listen(
 				side := model.NewOrderSide(order.Side)
 				if side != model.ORDER_SIDE_NONE {
 					if service != nil && notify.CanSend(level, notify.CANCELLED) {
+						data,_ := json.MarshalIndent(order, "", "  ")
 						if err = service.SendMessage(string(data), fmt.Sprintf("Kucoin - Cancelled %s", model.FormatOrderSide(side))); err != nil {
 							log.Printf("[ERROR] %v", err)
 						}
@@ -645,6 +647,7 @@ func (self *Kucoin) listen(
 				side := model.NewOrderSide(order.Side)
 				if side != model.ORDER_SIDE_NONE {
 					if notify.CanSend(level, notify.OPENED) || (level == notify.LEVEL_DEFAULT && side == model.SELL) {
+						data,_ := json.MarshalIndent(order, "", "  ")
 						if err = service.SendMessage(string(data), ("Kucoin - Open " + model.FormatOrderSide(side))); err != nil {
 							log.Printf("[ERROR] %v", err)
 						}
