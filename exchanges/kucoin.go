@@ -1229,7 +1229,7 @@ func (self *Kucoin) Buy(client interface{}, cancel bool, market string, calls mo
 		for _, order := range orders {
 			// do not cancel orders that we're about to re-place
 			index := calls.IndexByPrice(order.ParsePrice())
-			if index > -1 {
+			if index > -1 && order.ParseSize() == calls[index].Quantity {
 				calls[index].Skip = true
 			} else {
 				if _, err = kucoin.CancelOrder(order.Id); err != nil {
