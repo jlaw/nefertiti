@@ -1248,27 +1248,24 @@ func (self *Kucoin) Buy(client interface{}, cancel bool, market string, calls mo
 		}
 	}
 
-	// step 2: respect the baseMinSize
-	var (
-		min float64
-		qty float64
-	)
-	qty = size
-	if min, err = self.getMinSize(kucoin, market, true); err != nil {
-		return err
-	}
-	if min > 0 {
-		if qty < min {
-			qty = min
-		}
-	}
-
-	// step 3: open the top X buy orders
+	// step 2: open the top X buy orders
 	for _, call := range calls {
 		if !call.Skip {
 			limit := call.Price
 			if deviation != 1.0 {
 				kind, limit = call.Deviate(self, client, kind, deviation)
+			}
+			qty := call.Quantity
+			if qty == 0 {
+				qty = size
+			}
+			// respect the baseMinSize
+			var min float64
+			if min, err = self.getMinSize(kucoin, market, true); err != nil {
+				return err
+			}
+			if qty < min {
+				qty = min
 			}
 			_, _, err = self.Order(client,
 				model.BUY,

@@ -158,7 +158,6 @@ func buy(
 		var (
 			magg float64
 			mdip float64
-			mqty float64
 			mmin float64
 		)
 
@@ -190,16 +189,6 @@ func buy(
 
 		if book2, err = exchange.Aggregate(client, book1, market, magg); err != nil {
 			return err, market
-		}
-
-		mqty = size
-		// if we have an arg named --price, then we'll calculate the desired size here
-		if price != 0 {
-			var prec int
-			if prec, err = exchange.GetSizePrec(client, market); err != nil {
-				return err, market
-			}
-			mqty = pricing.RoundToPrecision(price/ticker, prec)
 		}
 
 		// ignore orders that are more expensive than ticker
@@ -335,30 +324,40 @@ func buy(
 			}
 		}
 
-		// the more non-sold sell orders we have, the bigger the new buy order size
-		if flag.Exists("dca") {
+		for _, e := range book2 {
+			e.Quantity = size
+
 			var prec int
 			if prec, err = exchange.GetSizePrec(client, market); err != nil {
 				return err, market
 			}
-			mqty = pricing.RoundToPrecision((mqty * (1 + (float64(hasOpenSell) * 0.2))), prec)
-		}
 
-		// for BTC and ETH, there is a minimum size (otherwise, we would never be hodl'ing)
-		var curr string
-		if curr, err = model.GetBaseCurr(available, market); err == nil {
-			units := model.GetSizeMin(hold.HasMarket(curr), curr)
-			if mqty < units {
-				return errors.Errorf("Cannot buy %s. Size is too low. You must buy at least %f units.", market, units), market
+			// if we have an arg named --price, then we'll calculate the desired size here
+			if price != 0 {
+				e.Quantity = pricing.RoundToPrecision(price/e.Price, prec)
 			}
+
+			// the more non-sold sell orders we have, the bigger the new buy order size
+			if flag.Exists("dca") {
+				e.Quantity = pricing.RoundToPrecision((e.Quantity * (1 + (float64(hasOpenSell) * 0.2))), prec)
+			}
+
+			// for BTC and ETH, there is a minimum size (otherwise, we would never be hodl'ing)
+			if curr, err := model.GetBaseCurr(available, market); err == nil {
+				units := model.GetSizeMin(hold.HasMarket(curr), curr)
+				if e.Quantity < units {
+					return errors.Errorf("Cannot buy %s. Size is too low. You must buy at least %f units.", market, units), market
+				}
+			}
+			log.Printf("[INFO] %s: %f @ %f = %f", e.Market, e.Quantity, e.Price, e.Quantity*e.Price)
 		}
 
 		// cancel your open buy order(s), then place the top X buy orders
 		if !test {
 			if len(book2) < int(top) {
-				err = exchange.Buy(client, true, market, book2.Calls(), mqty, 1.0, model.LIMIT)
+				err = exchange.Buy(client, true, market, book2.Calls(), 0.0, 1.0, model.LIMIT)
 			} else {
-				err = exchange.Buy(client, true, market, book2[:top].Calls(), mqty, 1.0, model.LIMIT)
+				err = exchange.Buy(client, true, market, book2[:top].Calls(), 0.0, 1.0, model.LIMIT)
 			}
 			if err != nil {
 				if len(enumerable) > 1 {
@@ -898,7 +897,7 @@ Options:
                (optional, defaults to 5%)
   --pip      = range in where the market is suspected to move up and down.
                the bot will ignore supports outside of this range.
-               (optional, defaults to 30%)  
+               (optional, defaults to 30%)
   --dist     = distribution/distance between your orders.
                (optional, defaults to 2%)
   --top      = number of orders to place in your book.
@@ -921,7 +920,7 @@ Alternative Strategy:
 
 Alternative Strategy Options:
   --exchange = name, for example: Bittrex
-  --signals  = provider, for example: MiningHamster 
+  --signals  = provider, for example: MiningHamster
   --price    = price (in quote currency) that you will want to pay for an order
   --quote    = currency that is used as the reference, for example: BTC or USDT
   --min      = minimum price for a unit of quote currency.

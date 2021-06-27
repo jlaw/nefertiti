@@ -12,8 +12,9 @@ import (
 
 type (
 	Buy struct {
-		Market string  `json:"market"`
-		Price  float64 `json:"price"`
+		Market   string  `json:"market"`
+		Price    float64 `json:"price"`
+		Quantity float64 `json:"quantity"`
 	}
 	Buys []Buy
 )
@@ -177,8 +178,9 @@ func (b Book) Calls() Calls {
 	for _, e := range b {
 		out = append(out, Call{
 			Buy: &Buy{
-				Market: e.Market,
-				Price:  e.Price,
+				Market:   e.Market,
+				Price:    e.Price,
+				Quantity: e.Quantity,
 			},
 		})
 	}

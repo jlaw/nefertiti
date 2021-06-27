@@ -1141,7 +1141,7 @@ func (self *Gdax) Buy(client interface{}, cancel bool, market string, calls mode
 					if order.Side == model.OrderSideString[model.BUY] {
 						// do not cancel orders that we're about to re-place
 						index := calls.IndexByPrice(order.Price)
-						if index > -1 && order.Size == size {
+						if index > -1 && order.Size == calls[index].Quantity {
 							calls[index].Skip = true
 						} else {
 							if err = gdaxClient.CancelOrder(order.Id); err != nil {
@@ -1161,10 +1161,14 @@ func (self *Gdax) Buy(client interface{}, cancel bool, market string, calls mode
 			if deviation != 1.0 {
 				kind, limit = call.Deviate(self, client, kind, deviation)
 			}
+			qty := call.Quantity
+			if qty == 0 {
+				qty = size
+			}
 			order := exchange.Order{
 				Type:      model.OrderTypeString[model.LIMIT],
 				Side:      model.OrderSideString[model.BUY],
-				Size:      size,
+				Size:      qty,
 				Price:     limit,
 				ProductId: market,
 			}
