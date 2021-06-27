@@ -18,10 +18,11 @@ import (
 
 const (
 	APP_NAME    = "nefertiti"
-	APP_VERSION = "0.0.154"
 )
 
 var (
+	GitSummary string = "0.0.154"
+	APP_VERSION = strings.TrimPrefix(GitSummary, "v")
 	console *cli.CLI
 	port    int64 = 38700
 )
