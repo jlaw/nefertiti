@@ -109,7 +109,7 @@ func (self *Kucoin) error(err error, level int64, service model.Notify) {
 
 	if service != nil {
 		if notify.CanSend(level, notify.ERROR) {
-			err := service.SendMessage(msg, "Kucoin - ERROR")
+			err := service.SendMessage("intermission:::" + msg, "Kucoin - ERROR")
 			if err != nil {
 				log.Printf("[ERROR] %v", err)
 			}
@@ -434,7 +434,9 @@ func (self *Kucoin) sell(
 				if notify.CanSend(level, notify.FILLED) {
 					if service != nil {
 						title := fmt.Sprintf("Kucoin - Done %s", model.FormatOrderSide(side))
+						sound := "bugle:::"
 						if side == model.SELL {
+							sound = "cashregister:::"
 							if strategy == model.STRATEGY_STOP_LOSS {
 								perc := (mult - 1) * 100
 								if order.Stop == "loss" {
@@ -443,7 +445,7 @@ func (self *Kucoin) sell(
 								title = fmt.Sprintf("%s %.2f%%", title, perc)
 							}
 						}
-						if err = service.SendMessage(string(data), title); err != nil {
+						if err = service.SendMessage(sound + string(data), title); err != nil {
 							log.Printf("[ERROR] %v", err)
 						}
 					}
